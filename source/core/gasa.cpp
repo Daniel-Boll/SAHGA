@@ -1,3 +1,5 @@
+#include <omp.h>
+
 #include <cmath>
 #include <iostream>
 #include <sahga/core/gasa.hpp>
@@ -8,26 +10,20 @@
 // Fitness calculation for the chromossome
 //----------------------------------------------------------------------------------------------
 double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
-  // TODO: Re-document in english.
-  int32_t independentVariablesNumber;
-  double chromosomeEstimation;
-  double sumN, sumD;  // TODO: Detail this.
-  double average;
-
   double fitness = 0;
 
   switch (modelType) {
-    case ModelType::LINEAR:
-      independentVariablesNumber = geneSize - 1;
+    case ModelType::LINEAR: {
+      int32_t independentVariablesNumber = geneSize - 1;
 
       // Para todos os dados de entrada
       for (int32_t i = 0; i < dataset->rowN; ++i) {
-        chromosomeEstimation = 0;
+        double chromosomeEstimation = 0;
 
         // Para todas as variáveis independentes
         for (int32_t j = 0; j < independentVariablesNumber; ++j) {
-          sumN = 0;
-          sumD = 0;
+          double sumN = 0;
+          double sumD = 0;
 
           // Para todos os k vizinhos do objeto i
           for (int32_t k = 0; k < graph->node[i].nRel; ++k) {
@@ -39,10 +35,8 @@ double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
             sumD += graph->node[i].edge[k].weight;
           }
 
-          // Média ponderada da variável independente Xj
-          average = sumN / sumD;
           // Acumula o termo correspondente à variável j (Pj * Média(Xj))
-          chromosomeEstimation += (chromosome.genes[j].value * average);
+          chromosomeEstimation += (chromosome.genes[j].value * (sumN / sumD));
         }
 
         // Acumula a constante do modelo
@@ -56,9 +50,9 @@ double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
             break;
           case ObjectiveType::MINERR:  // MINERR = Minimizar a quantidade de erros de
                                        // Omissão/Comissão (Dist. de espécies)
-            // Avaliado como ausência mas era presença (False Negative = Omission
-            // Error) ou Avaliado como presença mas era ausência ((False Positive =
-            // Comission Error)
+                                       // Avaliado como ausência mas era presença (False Negative =
+                                       // Omission Error) ou Avaliado como presença mas era ausência
+                                       // ((False Positive = Comission Error)
             if (((chromosomeEstimation < 0.5) && (dataset->M[i][0] == 1))
                 || ((chromosomeEstimation >= 0.5) && (dataset->M[i][0] == 0)))
               ++fitness;
@@ -73,18 +67,22 @@ double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
         }
       }
       break;  // case ModelType::LINEAR
+    }
 
-    case ModelType::QUADRATIC:
+    case ModelType::QUADRATIC: {
       // Metade dos coeficientes de variáveis (-1 desconta o termo constante)
-      independentVariablesNumber = (geneSize - 1) / 2;
+      int32_t independentVariablesNumber = (geneSize - 1) / 2;
 
+#pragma omp parallel for firstprivate(independentVariablesNumber) reduction(+ : fitness)
+// #pragma omp parallel for reduction(+ : fitness) num_threads(8)
       for (int32_t i = 0; i < dataset->rowN; ++i) {
-        chromosomeEstimation = 0;
+        // fmt::print("({}) - id: {}\n", i, omp_get_thread_num());
+        double chromosomeEstimation = 0;
 
         // Para todas as variáveis independentes
         for (int32_t j = 0; j < independentVariablesNumber; ++j) {
-          sumN = 0;
-          sumD = 0;
+          double sumN = 0;
+          double sumD = 0;
 
           // fmt::print("({}) Number of relationship: {}\n", graph->node[i].nodeId,
           // graph->node[i].nRel);
@@ -99,12 +97,9 @@ double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
             sumD += graph->node[i].edge[k].weight;
           }
 
-          // Média ponderada da variável independente Xj
-          average = sumN / sumD;
-
           // Acumula o termo correspondente à variável j (Pj * Média(Xj))
-          chromosomeEstimation += (chromosome.genes[2 * j].value * pow(average, 2)
-                                   + chromosome.genes[2 * j + 1].value * average);
+          chromosomeEstimation += (chromosome.genes[2 * j].value * pow((sumN / sumD), 2)
+                                   + chromosome.genes[2 * j + 1].value * (sumN / sumD));
         }
 
         // Acumula a constante do modelo
@@ -121,9 +116,9 @@ double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
             break;
           case ObjectiveType::MINERR:  // MINERR = Minimizar a quantidade de erros de
                                        // Omissão/Comissão (Dist. de espécies)
-            // Avaliado como ausência mas era presença (False Negative = Omission
-            // Error) ou Avaliado como presença mas era ausência ((False Positive =
-            // Comission Error)
+                                       // Avaliado como ausência mas era presença (False Negative =
+                                       // Omission Error) ou Avaliado como presença mas era ausência
+                                       // ((False Positive = Comission Error)
             if (((chromosomeEstimation < 0.5) && (dataset->M[i][0] == 1))
                 || ((chromosomeEstimation >= 0.5) && (dataset->M[i][0] == 0)))
               ++fitness;
@@ -138,15 +133,15 @@ double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
         }
       }
       break;  // case ModelType::QUADRATIC
-
-    case ModelType::LAG:
-      independentVariablesNumber
+    }
+    case ModelType::LAG: {
+      int32_t independentVariablesNumber
           = geneSize - 2;  // independentVariablesNumber = número de variáveis independentes;
                            // desconta a constante e o lambda
 
       // Para todos os dados de entrada
       for (int32_t i = 0; i < dataset->rowN; ++i) {
-        chromosomeEstimation = 0;
+        double chromosomeEstimation = 0;
         // Acumulando as contribuições em Y = (Coeficiente * Variável
         // Independente)
         for (int32_t j = 0; j < independentVariablesNumber; ++j)
@@ -154,8 +149,8 @@ double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
         // Acumulando a constante do modelo
         chromosomeEstimation += chromosome.genes[geneSize - 2].value;
         // Acumulando a contribuição do termo espacializado
-        sumN = 0;
-        sumD = 0;
+        double sumN = 0;
+        double sumD = 0;
 
         // Para todos os j vizinhos do objeto i
         for (int32_t j = 0; j < graph->node[i].nRel; ++j) {
@@ -170,10 +165,8 @@ double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
         }
 
         // Média ponderada das variáveis dependentes relacionadas a Y[i]
-        if (sumD == 0)
-          average = 0;
-        else
-          average = sumN / sumD;
+        double average = (sumD == 0) ? 0 : sumN / sumD;
+
         // Acumula a contribuição do termo espacial --> lambda * average dos Y[i]
         chromosomeEstimation += (chromosome.genes[geneSize - 1].value * average);
 
@@ -185,9 +178,9 @@ double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
             break;
           case ObjectiveType::MINERR:  // MINERR = Minimizar a quantidade de erros de
                                        // Omissão/Comissão (Dist. de espécies)
-            // Avaliado como ausência mas era presença (False Negative = Omission
-            // Error) ou Avaliado como presença mas era ausência ((False Positive =
-            // Comission Error)
+                                       // Avaliado como ausência mas era presença (False Negative =
+                                       // Omission Error) ou Avaliado como presença mas era ausência
+                                       // ((False Positive = Comission Error)
             if (((chromosomeEstimation < 0.5) && (dataset->M[i][0] == 1))
                 || ((chromosomeEstimation >= 0.5) && (dataset->M[i][0] == 0)))
               ++fitness;
@@ -202,7 +195,8 @@ double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
         }
       }
       break;  // case LAG
-  }           // end switch
+    }
+  }  // end switch
 
   return (fitness);
 }
@@ -263,6 +257,7 @@ void GASA::evolveSA() {
         population[j] = newPopulation[j];
     }
   }
+  // fmt::print("[B8]\n");
 }
 
 //----------------------------------------------------------------------------------------------
@@ -456,11 +451,9 @@ void GASA::evolveGA() {
   }
 
   // Realiza a mutação da nova população
-  // fmt::print("[B5]\n");
   for (int32_t i = eliteSize; i < populationSize; ++i) mutateChromosomeGA(newPopulation[i]);
 
   // Copiando a nova população
-  // fmt::print("[B6]\n");
   for (int32_t i = 0; i < populationSize; ++i) population[i] = newPopulation[i];
 }
 
@@ -537,13 +530,18 @@ GASA *GASA::run() {
   calculateFitnessGA();  // Avaliando a população inicial
 
   for (int32_t i = 0; i < maxGenerations; i++) {
+    fmt::print("Generation {}\n", i);
     evolveGA();
+    // fmt::print("Evolved\n");
     calculateFitnessGA();
+    // fmt::print("Calculated fitness GA\n");
 
+    // fmt::print("Beginning SA\n");
     while (currentTemperature > minimumTemperature) {
       evolveSA();
       calculateFitnessSA();
     }
+    // fmt::print("End SA\n");
 
     population[0] = bestChromosome;  // Restaura o melhor indivíduo pois o SA pode tê-lo modificado
     resetCurrentTemperature();       // Reinicializa --> TAtual = TMax
