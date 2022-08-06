@@ -74,7 +74,7 @@ double GASA::calculateChromosomeFitness(const Chromosome &chromosome) {
       int32_t independentVariablesNumber = (geneSize - 1) / 2;
 
 #pragma omp parallel for firstprivate(independentVariablesNumber) reduction(+ : fitness)
-// #pragma omp parallel for reduction(+ : fitness) num_threads(8)
+      // #pragma omp parallel for reduction(+ : fitness) num_threads(8)
       for (int32_t i = 0; i < dataset->rowN; ++i) {
         // fmt::print("({}) - id: {}\n", i, omp_get_thread_num());
         double chromosomeEstimation = 0;
@@ -657,13 +657,15 @@ GASA *GASA::setPopulationSize(const int32_t &populationSize) {
 // Ajusta/reajusta os parâmetros dos algoritmos baseados em valores
 // pre-determinados
 //----------------------------------------------------------------------------------------------
-GASA *GASA::setSAHGAParameters(const SAHGAParameter &parameters) {
+GASA *GASA::setSAHGAParameters(const SAHGAParameter &parameters, int32_t generations,
+                               int32_t population) {
   setGeneRange(-4.0, 4.0);
+
+  maxGenerations = generations;
+  populationSize = population;
 
   switch (parameters) {
     case SAHGAParameter::DEFAULT:
-      populationSize = 50;
-      maxGenerations = 10;
       maxIterations = 5;
       minimumTemperature = 0.001;
       maximumTemperature = 3;
@@ -676,8 +678,6 @@ GASA *GASA::setSAHGAParameters(const SAHGAParameter &parameters) {
       break;
 
     case SAHGAParameter::FAST:
-      populationSize = 20;
-      maxGenerations = 5;
       maxIterations = 3;
       minimumTemperature = 0.001;
       maximumTemperature = 3;
@@ -690,8 +690,6 @@ GASA *GASA::setSAHGAParameters(const SAHGAParameter &parameters) {
       break;
 
     case SAHGAParameter::HARD:
-      populationSize = 100;
-      maxGenerations = 20;
       maxIterations = 5;
       minimumTemperature = 0.001;
       maximumTemperature = 3;
@@ -704,8 +702,6 @@ GASA *GASA::setSAHGAParameters(const SAHGAParameter &parameters) {
       break;
 
     case SAHGAParameter::ULTRA:
-      populationSize = 150;
-      maxGenerations = 10;
       maxIterations = 10;
       minimumTemperature = 0.001;
       maximumTemperature = 3;
@@ -718,8 +714,6 @@ GASA *GASA::setSAHGAParameters(const SAHGAParameter &parameters) {
       break;
 
     case SAHGAParameter::HIGHPOP:
-      populationSize = 500;
-      maxGenerations = 20;
       maxIterations = 5;
       minimumTemperature = 0.001;
       maximumTemperature = 3;

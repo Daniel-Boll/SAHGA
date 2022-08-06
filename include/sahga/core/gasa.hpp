@@ -68,7 +68,8 @@ public:
        const ObjectiveType &objectiveFunction = ObjectiveType::MINSQT);
   ~GASA();
 
-  GASA *setSAHGAParameters(const SAHGAParameter &parameters = SAHGAParameter::DEFAULT);
+  GASA *setSAHGAParameters(const SAHGAParameter &parameters = SAHGAParameter::DEFAULT,
+                           int32_t generations = 10, int32_t population = 10);
   GASA *setPopulationSize(const int32_t &populationSize = 50);
   GASA *setGeneRange(const float &min = -4, const float &max = 4);
   GASA *setGeneRange(GeneFormat &geneFormat, const float &min = -4, const float &max = 4);

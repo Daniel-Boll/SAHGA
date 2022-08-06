@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -91,5 +92,29 @@ namespace utils {
                  << std::endl;
 
     outputFile.close();
+  }
+
+  std::string format(const std::string &format, ...) {
+    std::string result = format;
+    va_list args;
+    va_start(args, format);
+    while (true) {
+      size_t pos = result.find("{}");
+      if (pos == std::string::npos) {
+        break;
+      }
+      result.replace(pos, 2, va_arg(args, const char *));
+    }
+    va_end(args);
+    return result;
+  }
+
+  std::string currentDirectory() { return std::filesystem::current_path().string(); }
+
+  std::string getRootDirectory(const std::string &projectName) {
+    std::string cd = utils::currentDirectory();
+    // Use the current directory only up after the project name.
+    std::string rootDirectory = cd.substr(0, cd.find(projectName) + projectName.length());
+    return rootDirectory;
   }
 }  // namespace utils

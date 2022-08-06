@@ -10,11 +10,15 @@ add_requires(table.unpack(libs))
 
 target("sahga_lib")
   set_kind("static")
-  add_files("source/**/*.cpp")
+  add_files("source/sahga/**/*.cpp")
   add_packages(table.unpack(libs))
 
 target("SAHGA")
   set_kind("binary")
-  add_files("standalone/main.cpp")
+  add_files("standalone/sahga.cpp")
   add_packages(table.unpack(libs))
   add_deps("sahga_lib")
+
+target("MPI")
+  set_kind("binary")
+  add_files("standalone/mpi.cpp")

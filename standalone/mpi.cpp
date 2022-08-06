@@ -4,25 +4,12 @@
 #include <stdlib.h>
 
 #include <iostream>
+#include <mpi-sdumont/utils.hpp>
 #include <string>
 #include <vector>
 
-#include "utils.hpp"
-
+// 😥
 using namespace std;
-
-// use this for local machine
-const string pathToExternal
-    = "../build/linux/x86_64/release/SAHGA ";  // pq não posso concatenar com + " "
-const string pathToParamsFile = "./params.txt";
-
-// use this for sdumont
-// const string pathToExternal = "/scratch/ppar_unioeste/felipi.matozinho/sdumond/external ";
-// const string pathToExternal
-//     = "/scratch/ppar_unioeste/felipi.matozinho/sahga-api-xmake/build/linux/x86_64/release/SAHGA
-//     ";
-// const string pathToParamsFile
-//     = "/scratch/ppar_unioeste/felipi.matozinho/sahga-api-xmake/sdumond/params.txt";
 
 const short int inParamsAmount = 5;
 const short int responseParamsAmount = 3;
@@ -33,10 +20,14 @@ void slaveActions() {
   int data[inParamsAmount];
   int response = 0;
 
+  const std::string cd = utils::getRootDirectory("sahga-api-xmake");
+  const std::string externalBinary
+      = utils::format("{}/build/linux/x86_64/release/SAHGA", cd.c_str());
+
   while (true) {
     MPI_Recv(data, 5, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    string command = pathToExternal + to_string(data[0]) + " " + to_string(data[1]) + " "
-                     + to_string(data[2]) + " " + to_string(data[3]) + " " + to_string(data[4]);
+    std::string command = utils::format("{} {} {} {} {}", externalBinary.c_str(), data[0], data[1],
+                                        data[2], data[3], data[4]);
     system(command.c_str());
 
     MPI_Send(&response, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
@@ -102,7 +93,8 @@ void masterAction(int numProcesses, string paramsFileName) {
 }
 
 int main(int argc, char **argv) {
-  string paramsFileName = pathToParamsFile;
+  const std::string cd = utils::getRootDirectory("sahga-api-xmake");
+  const std::string paramsFileName = utils::format("{}/assets/mpi/params.txt", cd.c_str());
   int provided;
   // MPI_Init(&argc, &argv);
   MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
