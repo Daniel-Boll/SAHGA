@@ -1,0 +1,4 @@
+#!/bin/bash
+
+mpiCC main.cpp -o main -fopenmp
+sbatch runner.srm

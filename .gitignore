@@ -2,7 +2,12 @@
 .xmake/
 
 build/
+assets/user-info/
 
 compile_commands.json
 
 perf.data
+
+sdumond/output.txt
+
+CMakeLists.txt

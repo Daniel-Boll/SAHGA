@@ -1,9 +1,10 @@
+#include <chrono>
 #include <iomanip>
 #include <ios>
 #include <iostream>
 #include <sahga/core/core.hpp>
 
-static char* idPadding(int16_t id, int16_t padding) {
+static char* idPadding(int16_t id, int16_t padding) {7
   char* idString = new char[padding + 1];
   idString[padding] = '\0';
   for (int i = padding - 1; i >= 0; i--) {
@@ -285,7 +286,11 @@ SAHGACore* SAHGACore::adjustModel(int32_t modelType, int32_t objectiveType,
   auto gasa = std::make_unique<GASA>(*graph, *dataset, (GASA::ModelType)modelType,
                                      (GASA::ObjectiveType)objectiveType);
   gasa->setSAHGAParameters(GASA::SAHGAParameter::DEFAULT);
+  auto beginTime = std::chrono::high_resolution_clock::now();
   gasa->run();
+  auto endTime = std::chrono::high_resolution_clock::now();
+  auto executionTime = std::chrono::duration<double>(endTime - beginTime).count();
+  std::cout << this->id << "," << executionTime << std::endl;
 
   std::string output = Utils::miscellaneous::format(
       "{}/assets/user-info/{}/result.txt",
