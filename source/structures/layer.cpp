@@ -22,7 +22,7 @@ Layer *Layer::load(const std::string &fileName) {
   inputStream.open(fileName.c_str());
 
   if (!inputStream.is_open()) {
-    fmt::print("Erro ao abrir o arquivo {}.\n", fileName);
+    // fmt::print("Erro ao abrir o arquivo {}.\n", fileName);
     inputStream.clear();
     exit(0);
   } else {
@@ -69,7 +69,7 @@ Layer *Layer::save(const std::string &fileName) {
   std::ofstream outputStream;
 
   outputStream.open(fileName.c_str());
-  outputStream << setiosflags(std::ios::fixed);
+  outputStream << std::setiosflags(std::ios::fixed);
   outputStream << "NCOLS " << std::setprecision(0) << colN << "\n";
   outputStream << "NROWS " << rowN << "\n";
   outputStream << "XLLCORNER " << std::setprecision(6) << xCorner << "\n";

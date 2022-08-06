@@ -1,0 +1,10 @@
+//Modelo gerado para o arquivo de entrada: /home/danielboll/dev/Unioeste/2021/PP/trabalho.teste/sahga-api-xmake/assets/user-info/00001/mergedData.txt
+//Tipo do modelo ajustado:
+QUADRATIC
+//Aptidao final (Min ERR) = 329.00000000
+//Saida --> c1;c2;...;cn;constante;[lambda]
+-1.64885307;4.00000000;4.00000000;-1.92460922;-1.44331322;1.23183454;-1.77210766;-1.05190004;-1.20130417;-4.00000000;2.54165074;1.00660899;1.51339467;-3.06250401;-0.40310197;
+//Media das variáveis --> Media X0;Media X1;...MediaXn
+0.48422497;-80948.76477366;-80931.24423868;-80997.88791495;-81288.71056241;-80905.50113855;-81064.38271605;-81274.65706447;
+//Desvio padrao das variáveis --> s0;s1;...;sn
+0.50009420;39807.92813299;39844.65355710;39705.81890416;39096.61249744;39898.03225641;39566.59780924;39125.82953382;

@@ -1,20 +1,43 @@
+#include <iomanip>
+#include <ios>
+#include <iostream>
 #include <sahga/core/core.hpp>
+
+static char* idPadding(int16_t id, int16_t padding) {
+  char* idString = new char[padding + 1];
+  idString[padding] = '\0';
+  for (int i = padding - 1; i >= 0; i--) {
+    idString[i] = (id % 10) + '0';
+    id /= 10;
+  }
+  return idString;
+}
 
 static std::string getServerPathTo(const std::string& file) {
   const std::string cd = Utils::filemanagement::getRootDirectory("sahga-api-xmake");
-  return fmt::format("{}/assets/server-info/{}", cd, file);
+  // return fmt::format("{}/assets/server-info/{}", cd, file);
+  return Utils::miscellaneous::format("{}/assets/server-info/{}", cd.c_str(), file.c_str());
 }
 
 static std::string getUserPathTo(int32_t userId, const std::string& file) {
   const std::string cd = Utils::filemanagement::getRootDirectory("sahga-api-xmake");
-  return fmt::format("{}/assets/user-info/{:04}/{}", cd, userId, file);
+
+  return Utils::miscellaneous::format("{}/assets/user-info/{}/{}", cd.c_str(), idPadding(userId, 5),
+                                      file.c_str());
 }
 
-SAHGACore::SAHGACore() : _random(std::make_unique<Random>(.0, 1.)) {
+SAHGACore::SAHGACore(int16_t id, int32_t population, int32_t generations, float radius,
+                     int8_t objectiveFunction)
+    : _random(std::make_unique<Random>(.0, 1.)),
+      id(id),
+      population(population),
+      generations(generations),
+      radius(radius),
+      objectiveFunction(objectiveFunction) {
   const std::string speciesPoints = getServerPathTo("PtsFurcata.txt");
   const std::string geographicalLayers = getServerPathTo("layers");
 
-  const int32_t userId = 1;
+  const int32_t userId = id;
 
   const std::string generalProximationMatrix = getUserPathTo(userId, "gpm.txt");
   const std::string geographicalVariables = getUserPathTo(userId, "layersData.txt");
@@ -22,7 +45,7 @@ SAHGACore::SAHGACore() : _random(std::make_unique<Random>(.0, 1.)) {
   const std::string mergedMatrix = getUserPathTo(userId, "mergedData.txt");
 
   const auto modelType = GASA::ModelType::QUADRATIC;
-  const auto objectiveType = GASA::ObjectiveType::MINBOTH;
+  const auto objectiveType = (GASA::ObjectiveType)objectiveFunction;
 
   try {
     separateTrainTest(speciesPoints)
@@ -31,8 +54,10 @@ SAHGACore::SAHGACore() : _random(std::make_unique<Random>(.0, 1.)) {
         ->mergeData(generalProximationMatrix, geographicalVariables)
         ->adjustModel((int32_t)modelType, (int32_t)objectiveType, mergedMatrix);
   } catch (const std::exception& e) {
-    fmt::print("Error\n");
-    fmt::print("{}\n", e.what());
+    // fmt::print("Error\n");
+    // fmt::print("{}\n", e.what());
+    std::cout << "Error\n";
+    std::cout << e.what() << std::endl;
   }
 }
 
@@ -50,13 +75,19 @@ SAHGACore::SAHGACore() : _random(std::make_unique<Random>(.0, 1.)) {
  * */
 SAHGACore* SAHGACore::separateTrainTest(const std::string& filepath, double ratio, bool stratify) {
   const std::string cd = Utils::filemanagement::getRootDirectory("sahga-api-xmake");
-  std::string trainFilename = fmt::format("{}/assets/user-info/0001/train.txt", cd);
-  std::string testFilename = fmt::format("{}/assets/user-info/0001/test.txt", cd);
+  // std::string trainFilename = fmt::format("{}/assets/user-info/0001/train.txt", cd);
+  // std::string testFilename = fmt::format("{}/assets/user-info/0001/test.txt", cd);
+  std::string trainFilename = Utils::miscellaneous::format("{}/assets/user-info/{}/train.txt",
+                                                           cd.c_str(), idPadding(id, 5));
+  std::string testFilename = Utils::miscellaneous::format("{}/assets/user-info/{}/test.txt",
+                                                          cd.c_str(), idPadding(id, 5));
 
   std::vector<std::string> dataPoints;
 
   // Create all the path needed to store the train and test files
-  std::filesystem::create_directories(fmt::format("{}/assets/user-info/0001", cd));
+  // std::filesystem::create_directories(fmt::format("{}/assets/user-info/0001", cd));
+  std::filesystem::create_directories(
+      Utils::miscellaneous::format("{}/assets/user-info/{}", cd.c_str(), idPadding(id, 5)));
 
   std::filesystem::exists(trainFilename) ? std::filesystem::remove(trainFilename) : 0;
   std::filesystem::exists(testFilename) ? std::filesystem::remove(testFilename) : 0;
@@ -102,12 +133,18 @@ SAHGACore* SAHGACore::separateTrainTest(const std::string& filepath, double rati
 }
 
 SAHGACore* SAHGACore::generateMPG() {
-  const std::string filename
-      = fmt::format("{}/assets/user-info/0001/train.txt",
-                    Utils::filemanagement::getRootDirectory("sahga-api-xmake"));
-  const std::string output
-      = fmt::format("{}/assets/user-info/0001/gpm.txt",
-                    Utils::filemanagement::getRootDirectory("sahga-api-xmake"));
+  // const std::string filename
+  //     = fmt::format("{}/assets/user-info/0001/train.txt",
+  //                   Utils::filemanagement::getRootDirectory("sahga-api-xmake"));
+  // const std::string output
+  //     = fmt::format("{}/assets/user-info/0001/gpm.txt",
+  //                   Utils::filemanagement::getRootDirectory("sahga-api-xmake"));
+  const std::string filename = Utils::miscellaneous::format(
+      "{}/assets/user-info/{}/train.txt",
+      Utils::filemanagement::getRootDirectory("sahga-api-xmake").c_str(), idPadding(id, 5));
+  const std::string output = Utils::miscellaneous::format(
+      "{}/assets/user-info/{}/gpm.txt",
+      Utils::filemanagement::getRootDirectory("sahga-api-xmake").c_str(), idPadding(id, 5));
 
   auto dataset = std::make_unique<Dataset>();
   ReadFile::Read(*dataset, filename, '\t');
@@ -124,12 +161,12 @@ SAHGACore* SAHGACore::generateMPG() {
 }
 
 SAHGACore* SAHGACore::extractLayers(const std::string& folderName) {
-  const std::string presenceAusenceFilename
-      = fmt::format("{}/assets/user-info/0001/train.txt",
-                    Utils::filemanagement::getRootDirectory("sahga-api-xmake"));
-  const std::string output
-      = fmt::format("{}/assets/user-info/0001/layersData.txt",
-                    Utils::filemanagement::getRootDirectory("sahga-api-xmake"));
+  const std::string presenceAusenceFilename = Utils::miscellaneous::format(
+      "{}/assets/user-info/{}/train.txt",
+      Utils::filemanagement::getRootDirectory("sahga-api-xmake").c_str(), idPadding(id, 5));
+  const std::string output = Utils::miscellaneous::format(
+      "{}/assets/user-info/{}/layersData.txt",
+      Utils::filemanagement::getRootDirectory("sahga-api-xmake").c_str(), idPadding(id, 5));
 
   auto dataset = std::make_unique<Dataset>();
   ReadFile::Read(*dataset, presenceAusenceFilename, '\t');
@@ -197,9 +234,13 @@ SAHGACore* SAHGACore::mergeData(const std::string& mpgFilename, const std::strin
   for (int32_t i = 0; i < layersData[0].length(); ++i)
     if (layersData[0][i] == ';') ++Nvariables;
 
-  std::string mergedDataFilename
-      = fmt::format("{}/assets/user-info/0001/mergedData.txt",
-                    Utils::filemanagement::getRootDirectory("sahga-api-xmake"));
+  // std::string mergedDataFilename
+  //     = fmt::format("{}/assets/user-info/0001/mergedData.txt",
+  //                   Utils::filemanagement::getRootDirectory("sahga-api-xmake"));
+
+  std::string mergedDataFilename = Utils::miscellaneous::format(
+      "{}/assets/user-info/{}/mergedData.txt",
+      Utils::filemanagement::getRootDirectory("sahga-api-xmake").c_str(), idPadding(id, 5));
 
   std::ofstream mergedDataStream(mergedDataFilename.c_str());
 
@@ -237,13 +278,18 @@ SAHGACore* SAHGACore::adjustModel(int32_t modelType, int32_t objectiveType,
   // Normalizando a matriz de dados
   dataset->normalize(int32_t(normalize));
 
-  auto gasa = (std::make_unique<GASA>(*graph, *dataset, (GASA::ModelType)modelType,
-                                      (GASA::ObjectiveType)objectiveType))
-                  ->setSAHGAParameters(GASA::SAHGAParameter::HIGHPOP)
-                  ->run();
+  // auto gasa = (std::make_unique<GASA>(*graph, *dataset, (GASA::ModelType)modelType,
+  //                                     (GASA::ObjectiveType)objectiveType))
+  //                 ->setSAHGAParameters(GASA::SAHGAParameter::DEFAULT)
+  //                 ->run();
+  auto gasa = std::make_unique<GASA>(*graph, *dataset, (GASA::ModelType)modelType,
+                                     (GASA::ObjectiveType)objectiveType);
+  gasa->setSAHGAParameters(GASA::SAHGAParameter::DEFAULT);
+  gasa->run();
 
-  std::string output = fmt::format("{}/assets/user-info/0001/result.txt",
-                                   Utils::filemanagement::getRootDirectory("sahga-api-xmake"));
+  std::string output = Utils::miscellaneous::format(
+      "{}/assets/user-info/{}/result.txt",
+      Utils::filemanagement::getRootDirectory("sahga-api-xmake").c_str(), idPadding(id, 5));
 
   std::ofstream outputStream(output.c_str());
 
@@ -263,6 +309,7 @@ SAHGACore* SAHGACore::adjustModel(int32_t modelType, int32_t objectiveType,
     outputStream << "//Aptidao final (Min SQT&ERR) = " << gasa->bestChromosome.fitness << '\n';
 
   outputStream << "//Saida --> c1;c2;...;cn;constante;[lambda]" << '\n';
+
   for (int32_t i = 0; i < gasa->geneSize; ++i)
     outputStream << gasa->bestChromosome.genes[i].value << ';';
   outputStream << '\n' << "//Media das variáveis --> Media X0;Media X1;...MediaXn" << '\n';
@@ -275,4 +322,6 @@ SAHGACore* SAHGACore::adjustModel(int32_t modelType, int32_t objectiveType,
   return this;
 }
 
-SAHGACore::~SAHGACore() { fmt::print("SAHGACore::~SAHGACore()\n"); }
+SAHGACore::~SAHGACore() {
+  // fmt::print("SAHGACore::~SAHGACore()\n");
+}

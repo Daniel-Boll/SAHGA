@@ -1,4 +1,4 @@
-//Dados extraidos do conjunto de layers: /home/danielboll/dev/Unioeste/2021/PP/trabalho/sahga-api-xmake/assets/user-info/0001/train.txt
+//Dados extraidos do conjunto de layers: /home/danielboll/dev/Unioeste/2021/PP/trabalho.teste/sahga-api-xmake/assets/user-info/00001/train.txt
 //Formato dos dados --> #id;long;lat;x0;x1;x2;...;xn
 1;-4.000000;-90.000000;0;-99999.000;-99999.000;-99999.000;-99999.000;-99999.000;-99999.000;-99999.000;-99999.000;
 2;-72.000000;-89.000000;1;-99999.000;-99999.000;-99999.000;-99999.000;-99999.000;-99999.000;-99999.000;-99999.000;

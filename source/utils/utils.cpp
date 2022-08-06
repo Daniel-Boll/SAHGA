@@ -52,6 +52,23 @@ namespace Utils {
       std::transform(str.begin(), str.end(), str.begin(), ::toupper);
       return str;
     }
+
+    // Format string using "{}", replace each "{}" with the value of the
+    // corresponding argument.
+    std::string format(const std::string &format, ...) {
+      std::string result = format;
+      va_list args;
+      va_start(args, format);
+      while (true) {
+        size_t pos = result.find("{}");
+        if (pos == std::string::npos) {
+          break;
+        }
+        result.replace(pos, 2, va_arg(args, const char *));
+      }
+      va_end(args);
+      return result;
+    }
   }  // namespace miscellaneous
 
   namespace filemanagement {
@@ -62,6 +79,7 @@ namespace Utils {
       // Use the current directory only up after the project name.
       std::string rootDirectory = cd.substr(0, cd.find(projectName) + projectName.length());
       return rootDirectory;
+      // return "/scratch/ppar_unioeste/daniel.bol/sahga-api-xmake";
     }
 
     double getNumber(std::string &line, char separator) {

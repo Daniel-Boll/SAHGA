@@ -2,7 +2,7 @@ set_languages("cxx17")
 add_rules("mode.debug", "mode.release")
 set_policy("preprocessor.gcc.directives_only", false)
 
-local libs = { "fmt", "openmp" }
+local libs = { "openmp" }
 -- local libs = { "fmt" }
 
 add_includedirs("include")

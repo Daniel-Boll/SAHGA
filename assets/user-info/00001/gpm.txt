@@ -1,4 +1,4 @@
-//Matriz de proximidade para o arquivo: /home/danielboll/dev/Unioeste/2021/PP/trabalho/sahga-api-xmake/assets/user-info/0001/train.txt - raio = 5 km - Tipo = R/2
+//Matriz de proximidade para o arquivo: /home/danielboll/dev/Unioeste/2021/PP/trabalho.teste/sahga-api-xmake/assets/user-info/00001/train.txt - raio = 5 km - Tipo = R/2
 //Formato da MPG --> #id;n;Rel1;Rel2;...;Reln;W1;W2;...;Wn
 1;1;1;1;
 2;1;2;1;

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <sahga/utils/common.hpp>
 #include <sahga/utils/read.hpp>
 
@@ -9,7 +10,8 @@ int TextFile::ReadData(std::vector<std::string> &list, const std::string &fileNa
   file.open(fileName);
 
   if (!file.is_open()) {
-    fmt::print("Failed to open");
+    // fmt::print("Failed to open");
+    std::cout << "Failed to open " << fileName << std::endl;
     file.clear();
     exit(0);
   }
@@ -33,7 +35,8 @@ int TextFile::ReadData(Dataset &M, const std::string &fileName, const char &sepa
   FIn.open(fileName.c_str(), std::ios::in);
 
   if (!FIn.is_open()) {
-    fmt::print("\nErro ao abrir o arquivo {}.", fileName);
+    // fmt::print("\nErro ao abrir o arquivo {}.", fileName);
+    std::cout << "Failed to open " << fileName << std::endl;
     FIn.clear();
     exit(0);
   } else {
@@ -68,7 +71,8 @@ int TextFile::ReadData(Graph &G, Dataset &M, const std::string &fileName, const 
   std::ifstream inputStream(fileName);
 
   if (!inputStream.is_open()) {
-    fmt::print("\nErro ao abrir o arquivo {}.", fileName);
+    // fmt::print("\nErro ao abrir o arquivo {}.", fileName);
+    std::cout << "Failed to open " << fileName << std::endl;
     inputStream.clear();
     exit(0);
   }
@@ -111,19 +115,25 @@ int TextFile::ReadData(Graph &G, Dataset &M, const std::string &fileName, const 
 }
 
 Strat_Read *Strat_Read::FileFormat(const std::string &fileName) {
-  int pos;
-  std::string extension;
+  int32_t extensionPosition = fileName.find_last_of(".");
 
-  if ((pos = fileName.find(".", 2)) == -1) {
-    fmt::print("Nome de arquivo sem extensão!");
+  if (extensionPosition == -1) {
+    // fmt::print("Nome de arquivo sem extensão!");
+    // fmt::print("\n{}\n", fileName);
+    std::cout << "File name without extension!" << std::endl;
+    std::cout << "File name: " << fileName << std::endl;
     exit(0);
   } else {
-    extension = Utils::miscellaneous::upperCase(fileName.substr(pos + 1, 3));
+    std::string extension
+        = Utils::miscellaneous::upperCase(fileName.substr(extensionPosition + 1, 3));
 
     if (extension == "TXT") {
       return (new TextFile);
     } else {
-      fmt::print("Formato de arquivo desconhecido!");
+      // fmt::print("Formato de arquivo desconhecido!");
+      std::cout << "Unknown file format!" << std::endl;
+      std::cout << "File name: " << fileName << std::endl;
+      std::cout << "Extension: " << extension << std::endl;
       exit(0);
     }
   }

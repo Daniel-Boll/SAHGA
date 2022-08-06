@@ -530,7 +530,8 @@ GASA *GASA::run() {
   calculateFitnessGA();  // Avaliando a população inicial
 
   for (int32_t i = 0; i < maxGenerations; i++) {
-    fmt::print("Generation {}\n", i);
+    // fmt::print("Generation {}\n", i);
+    std::cout << "Generation " << i << std::endl;
     evolveGA();
     // fmt::print("Evolved\n");
     calculateFitnessGA();

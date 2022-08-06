@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdarg.h>
+
 #include <sahga/core/core.hpp>
 
 namespace Utils {
@@ -16,6 +18,8 @@ namespace Utils {
 
     // Converts a full string to upper case.
     std::string upperCase(std::string str);
+
+    std::string format(const std::string &format, ...);
   }  // namespace miscellaneous
 
   namespace filemanagement {

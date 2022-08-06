@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --nodes=1                      #Numero de Nós
+#SBATCH --ntasks-per-node=1            #Numero de tarefas por Nó
+#SBATCH --ntasks=1                     #Numero total de tarefas MPI
+#SBATCH --cpus-per-task=8              #Numero de threads
+#SBATCH -p cpu_dev                     #Fila (partition) a ser utilizada
+#SBATCH -J ppar_unioeste-sahga         #Nome job
+
+#Exibe os nós alocados para o Job
+echo $SLURM_JOB_NODELIST
+nodeset -e $SLURM_JOB_NODELIST
+
+cd $SLURM_SUBMIT_DIR
+
+module load gcc/11.1
+
+#Configura o executavel
+EXEC=/scratch/ppar_unioeste/daniel.bol/sahga-api-xmake/build/linux/x86_64/release/SAHGA
+
+#exibe informaçoes sobre o executavel
+/usr/bin/ldd $EXEC
+
+#configura o numero de threads, de acordo com o parametro definido no Slurm
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
+srun -N 1 -c $SLURM_CPUS_PER_TASK $EXEC

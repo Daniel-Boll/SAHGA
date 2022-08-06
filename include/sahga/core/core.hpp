@@ -9,11 +9,16 @@
 
 class SAHGACore {
 private:
-  // Unique ptr of Random
   std::unique_ptr<Random> _random;
 
+  int16_t id;
+  int32_t population, generations;
+  float radius;
+  int8_t objectiveFunction;
+
 public:
-  SAHGACore();
+  SAHGACore(int16_t id, int32_t population, int32_t generations, float radius,
+            int8_t objectiveFunction);
   ~SAHGACore();
 
   SAHGACore* separateTrainTest(const std::string& filename, double ratio = 75.0,
